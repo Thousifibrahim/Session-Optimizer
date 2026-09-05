@@ -1,0 +1,72 @@
+[build-system]
+requires = ["hatchling>=1.26,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "session-optimizer"
+version = "0.1.0"
+description = "Portable, token-budgeted session memory with local embeddings."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+authors = [{ name = "Thousif Ibrahim" }]
+keywords = ["ai-memory", "session-memory", "embeddings", "qdrant", "serverless"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Framework :: FastAPI",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+  "boto3>=1.36,<2",
+  "fastapi>=0.115,<1",
+  "fastembed>=0.4,<1",
+  "langchain-text-splitters>=0.3,<2",
+  "mangum>=0.19,<1",
+  "pydantic>=2.9,<3",
+  "pydantic-settings>=2.7,<3",
+  "qdrant-client>=1.20,<1.21",
+  "tiktoken>=0.8,<1",
+  "uvicorn>=0.34,<1",
+]
+
+[project.urls]
+Homepage = "https://thousifibrahim.github.io/Session-Optimizer/"
+Repository = "https://github.com/Thousifibrahim/Session-Optimizer"
+Issues = "https://github.com/Thousifibrahim/Session-Optimizer/issues"
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28,<1",
+  "mypy>=1.14,<2",
+  "moto[s3]==5.1.8",
+  "pytest>=8.3,<10",
+  "ruff>=0.9,<1",
+  "boto3-stubs[s3,secretsmanager]>=1.36,<2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["core", "api"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["core", "api"]
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["mangum.*"]
+ignore_missing_imports = true
