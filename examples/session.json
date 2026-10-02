@@ -1,0 +1,17 @@
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "We are building a session memory API. Use Python, Qdrant, S3 and Terraform. Keep credentials out of exported packages."
+    },
+    {
+      "role": "assistant",
+      "content": "The portable package will contain an extractive recap, a session identifier and vector references. Detailed recall requires an authenticated search endpoint."
+    },
+    {
+      "role": "user",
+      "content": "Decision: deploy a Lambda container behind API Gateway. Next task: benchmark cold starts before publishing latency claims."
+    }
+  ],
+  "summary_token_budget": 128
+}
