@@ -1,0 +1,51 @@
+services:
+  api:
+    image: session-optimizer-local
+    build:
+      context: ..
+    entrypoint: ["python", "-m", "uvicorn"]
+    command: ["api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      CTX_API_TOKEN: ${CTX_API_TOKEN:?Set a random token of at least 32 characters}
+      CTX_BUCKET: session-optimizer
+      CTX_QDRANT_URL: http://qdrant:6333
+      CTX_S3_ENDPOINT_URL: http://s3:5000
+      CTX_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: local-emulator-only
+      AWS_SECRET_ACCESS_KEY: local-emulator-only
+    depends_on:
+      bucket:
+        condition: service_completed_successfully
+      qdrant:
+        condition: service_started
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:v1.20.0
+    restart: unless-stopped
+
+  s3:
+    image: motoserver/moto:5.1.8
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    restart: unless-stopped
+
+  bucket:
+    image: session-optimizer-local
+    build:
+      context: ..
+    environment:
+      AWS_ACCESS_KEY_ID: local-emulator-only
+      AWS_SECRET_ACCESS_KEY: local-emulator-only
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["python", "-c"]
+    command:
+      - "import boto3; boto3.client('s3', endpoint_url='http://s3:5000').create_bucket(Bucket='session-optimizer')"
+    depends_on:
+      s3:
+        condition: service_healthy

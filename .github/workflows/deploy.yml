@@ -1,0 +1,77 @@
+name: Deploy approved image
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Unique immutable image tag (for example a commit SHA)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment: production
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      TF_VAR_region: ${{ vars.AWS_REGION }}
+      TF_VAR_name: ${{ vars.PROJECT_NAME }}
+      TF_VAR_qdrant_url: ${{ vars.QDRANT_URL }}
+      TF_VAR_secret_arn: ${{ vars.CTX_SECRET_ARN }}
+      IMAGE_TAG: ${{ inputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: ruff check . && ruff format --check . && mypy && pytest -q
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.5"
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Initialize remote state
+        working-directory: infrastructure/terraform
+        env:
+          STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+          STATE_KEY: ${{ vars.TF_STATE_KEY }}
+          SECRET_KMS_KEY_ARN: ${{ vars.CTX_SECRET_KMS_KEY_ARN }}
+        run: |
+          set -eu
+          test -n "$STATE_BUCKET"
+          test -n "$STATE_KEY"
+          if [ -n "$SECRET_KMS_KEY_ARN" ]; then
+            echo "TF_VAR_secret_kms_key_arn=$SECRET_KMS_KEY_ARN" >> "$GITHUB_ENV"
+          fi
+          terraform init -backend-config="bucket=$STATE_BUCKET" -backend-config="key=$STATE_KEY" -backend-config="region=$AWS_REGION" -backend-config="encrypt=true"
+          terraform fmt -check
+          terraform validate
+          terraform test
+      - name: Build and push image
+        working-directory: infrastructure/terraform
+        run: |
+          set -eu
+          if ! [[ "$IMAGE_TAG" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$ ]]; then
+            echo "Invalid image tag" >&2; exit 1
+          fi
+          REPOSITORY="$(terraform output -raw repository_url)"
+          aws ecr get-login-password | docker login --username AWS --password-stdin "${REPOSITORY%%/*}"
+          docker build --platform linux/amd64 --provenance=false -t "$REPOSITORY:$IMAGE_TAG" ../..
+          docker push "$REPOSITORY:$IMAGE_TAG"
+          DIGEST="$(aws ecr describe-images --repository-name "$TF_VAR_name" --image-ids "imageTag=$IMAGE_TAG" --query 'imageDetails[0].imageDigest' --output text)"
+          echo "TF_VAR_image_digest=$DIGEST" >> "$GITHUB_ENV"
+      - name: Apply infrastructure
+        working-directory: infrastructure/terraform
+        run: |
+          terraform plan -out=deployment.tfplan
+          terraform apply -auto-approve deployment.tfplan
