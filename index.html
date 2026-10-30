@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Session Optimizer is an open-source, portable chat memory API with local embeddings, token-budgeted recaps and authenticated retrieval.">
+  <meta name="theme-color" content="#10151d">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <title>Session Optimizer / Portable AI memory</title>
+  <style>
+    :root{color-scheme:dark;--bg:#10151d;--panel:#18212c;--line:#2b3849;--text:#edf3fa;--muted:#aab8cb;--accent:#b8f772;--blue:#a1c9ff;--radius:18px}
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:96px}
+    body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    a{color:var(--blue);text-underline-offset:4px}
+    a:hover{color:var(--accent)}
+    a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:5px}
+    .skip{position:absolute;left:16px;top:-90px;background:var(--accent);color:var(--bg);padding:12px;z-index:5}
+    .skip:focus{top:12px}
+    .wrap{width:min(1120px,calc(100% - 40px));margin-inline:auto}
+    header{background:#10151df5;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:20px;min-height:76px}
+    .brand{font-size:22px;font-weight:800;text-decoration:none;color:var(--text);letter-spacing:-1px}
+    .brand span{color:var(--accent)}
+    nav{display:flex;gap:22px;flex-wrap:wrap;font-size:14px}
+    nav a{text-decoration:none;color:var(--muted)}
+    .hero{padding:100px 0 70px;display:grid;grid-template-columns:1.3fr 1fr;gap:54px;align-items:center}
+    .eyebrow{font:700 12px/1.5 ui-monospace,monospace;letter-spacing:2px;color:var(--accent);text-transform:uppercase}
+    h1{font-size:clamp(48px,6.3vw,78px);line-height:1.03;letter-spacing:-4px;margin:22px 0}
+    h1 span{color:var(--accent)}
+    h2{font-size:clamp(27px,4vw,40px);line-height:1.2;letter-spacing:-1px;margin:8px 0 20px}
+    h3{font-size:20px;line-height:1.4;margin:0 0 12px}
+    p{margin:0 0 16px}
+    .lead{font-size:19px;max-width:620px;color:var(--muted)}
+    .muted,small{color:var(--muted)}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0}
+    .button{padding:12px 21px;border:1px solid var(--line);border-radius:9px;text-decoration:none;color:var(--text);font-weight:650}
+    .button.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+    .button:hover{border-color:var(--accent)}
+    .badge{display:inline-block;font-size:12px;font-weight:650;border:1px solid var(--line);border-radius:30px;padding:4px 11px;color:var(--muted)}
+    .badges{display:flex;gap:8px;flex-wrap:wrap}
+    .terminal{background:#0a1017;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:0 28px 70px #0004}
+    .terminal-bar{padding:13px 20px;border-bottom:1px solid var(--line);color:var(--muted);font:12px ui-monospace,monospace}
+    .terminal pre{margin:0;border:0;background:none;padding:25px;color:var(--accent)}
+    .terminal .note{padding:0 25px 22px;font-size:13px;color:var(--muted)}
+    section.content{padding:66px 0;border-top:1px solid var(--line)}
+    .section-head{display:flex;justify-content:space-between;align-items:start;gap:24px;margin-bottom:28px}
+    .section-head p{max-width:480px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+    .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .card{padding:26px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}
+    .card p{color:var(--muted);font-size:15px}
+    .card p:last-child{margin-bottom:0}
+    .number{font:700 13px ui-monospace,monospace;color:var(--accent);display:block;margin-bottom:18px}
+    .notice{border-left:3px solid var(--accent);background:#b8f77208;padding:18px 22px;border-radius:0 10px 10px 0;color:var(--muted);margin:24px 0}
+    .notice strong{color:var(--text)}
+    pre{overflow:auto;max-width:100%;padding:22px;background:#0a1017;border:1px solid var(--line);border-radius:12px;font:13px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;tab-size:2}
+    code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.88em;color:var(--blue)}
+    pre code{font-size:inherit;color:inherit}
+    .flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+    .flow .card{padding:20px}
+    .flow small{display:block;font-size:12px}
+    .table-scroll{overflow:auto;border:1px solid var(--line);border-radius:12px}
+    table{border-collapse:collapse;width:100%;min-width:540px;font-size:14px;text-align:left}
+    th,td{padding:15px 20px;border-bottom:1px solid var(--line)}
+    th{background:var(--panel);color:var(--muted);font-size:12px;letter-spacing:1px}
+    tr:last-child td{border-bottom:0}
+    ul,ol{padding-left:22px}
+    li{margin-bottom:9px}
+    .timeline{list-style:none;padding:0;border-left:1px solid var(--line);margin:24px 0 0 8px}
+    .timeline li{padding:0 0 25px 27px;position:relative}
+    .timeline li::before{content:"";position:absolute;left:-5px;top:9px;width:9px;height:9px;background:var(--accent);border-radius:50%}
+    .timeline time{color:var(--accent);font:12px ui-monospace,monospace}
+    details{border-bottom:1px solid var(--line);padding:18px 0}
+    summary{cursor:pointer;font-weight:650;font-size:17px}
+    details p{color:var(--muted);max-width:850px;margin:16px 0 0}
+    footer{padding:42px 0;border-top:1px solid var(--line)}
+    .footer-row{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+    .footer-row a{margin-left:16px}
+    @media(max-width:850px){.hero{grid-template-columns:1fr;gap:28px;padding-top:55px}.grid{grid-template-columns:1fr 1fr}.flow{grid-template-columns:1fr 1fr}.section-head{display:block}nav{gap:14px}.nav{flex-wrap:wrap;padding:14px 0}h1{letter-spacing:-2px}}
+    @media(max-width:540px){.wrap{width:calc(100% - 32px)}.grid,.grid.two,.flow{grid-template-columns:1fr}.hero{padding-top:40px}section.content{padding:45px 0}.card{padding:22px}nav{font-size:12px;gap:12px}.footer-row a{margin:0 12px 0 0}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  </style>
+</head>
+<body>
+  <header data-release-step="1">
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="wrap nav">
+      <a class="brand" href="#main">session<span>-</span>optimizer</a>
+      <nav aria-label="Main navigation">
+        <a href="#architecture">Architecture</a><a href="#start">Quickstart</a>
+        <a href="#contribute">Contribute</a>
+        <a href="https://github.com/Thousifibrahim/Session-Optimizer">GitHub &nearr;</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="wrap">
+    <section class="hero" aria-labelledby="hero-title" data-release-step="2">
+      <div>
+        <div class="eyebrow">Open source / Portable session memory</div>
+        <h1 id="hero-title">New chat.<br><span>Same context.</span></h1>
+        <p class="lead">Keep the decisions. Carry the next steps. Session Optimizer turns a chat into a compact recap and searchable references&mdash;without a paid LLM API.</p>
+        <div class="actions"><a class="button primary" href="#start">Build your first memory</a><a class="button" href="https://github.com/Thousifibrahim/Session-Optimizer">Explore the source &nearr;</a></div>
+        <div class="badges"><span class="badge">MIT license</span><span class="badge">Python 3.12</span><span class="badge">Pre-release</span><span class="badge">Local embeddings</span></div>
+      </div>
+      <div class="terminal">
+        <div class="terminal-bar">memory.emp &nbsp;/&nbsp; portable JSON</div>
+        <pre aria-label="Illustrative memory package"><code>{
+  "format": "emp",
+  "version": 1,
+  "summary_tokens": "Decision:
+    deploy Lambda behind API Gateway.
+    Next: benchmark cold starts.",
+  "vector_state": {
+    "dimensions": 384,
+    "point_ids": ["session-scoped-uuid"]
+  }
+}</code></pre>
+        <p class="note">Illustrative excerpt, not a complete valid package. Read the recap anywhere; retrieve details through your authenticated API.</p>
+      </div>
+    </section>
+    <section id="overview" class="content" data-release-step="3">
+      <div class="section-head"><div><div class="eyebrow">The idea</div><h2>Memory, not magic.</h2></div><p>A small, understandable service for preserving selected historical context. No hidden model-state claims. No full agent framework.</p></div>
+      <div class="grid">
+        <article class="card"><span class="number">01 / CONDENSE</span><h3>Budget the recap</h3><p>Paragraph-aware splitting and extractive selection keep a recap within your measured token budget. Important details can still be omitted.</p></article>
+        <article class="card"><span class="number">02 / INDEX</span><h3>Keep source references</h3><p>Local ONNX embeddings turn passages into normalized vectors. Qdrant retains the original text for session-scoped similarity search.</p></article>
+        <article class="card"><span class="number">03 / CARRY</span><h3>Export a checkpoint</h3><p>A UTF-8 <code>.emp</code> file contains a recap, transcript fingerprint and vector IDs. Upload it to a new chat or rename it to <code>.json</code>.</p></article>
+      </div>
+    </section>
+    <section id="architecture" class="content" data-release-step="4">
+      <div class="eyebrow">Under the hood</div><h2>Four boundaries. One clear flow.</h2>
+      <div class="flow">
+        <div class="card"><span class="number">01</span><h3>Chat export</h3><small>Text messages from your UI or webhook client.</small></div>
+        <div class="card"><span class="number">02</span><h3>HTTP API</h3><small>API Gateway &rarr; FastAPI + Mangum in a Lambda container.</small></div>
+        <div class="card"><span class="number">03</span><h3>Python core</h3><small>tiktoken + LangChain splitter + FastEmbed.</small></div>
+        <div class="card"><span class="number">04</span><h3>Durable storage</h3><small>Private S3 packages + Qdrant source vectors.</small></div>
+      </div>
+      <div class="notice"><strong>Event-driven, synchronous.</strong> Each HTTP request is a compute event. There is no queue or background job system. Qdrant, the Terraform state bucket and the secret are explicit external deployment prerequisites.</div>
+      <p class="muted">Three code boundaries: <code>core/</code> for contracts and embeddings, <code>api/</code> for authenticated persistence, <code>infrastructure/</code> for Compose and Terraform. <code>skills/</code> documents integration contracts.</p>
+    </section>
+    <section id="package" class="content" data-release-step="5">
+      <div class="eyebrow">Embedding Memory Package</div><h2>A readable checkpoint, not a black box.</h2>
+      <div class="table-scroll"><table><thead><tr><th scope="col">FIELD</th><th scope="col">WHAT IT MEANS</th></tr></thead><tbody>
+        <tr><td><code>summary_tokens</code></td><td>Lossy extractive recap, measured with cl100k_base.</td></tr>
+        <tr><td><code>session_id</code> / <code>created_at</code></td><td>Canonical session UUID and UTC creation time.</td></tr>
+        <tr><td><code>vector_state</code></td><td>Collection, model, 384 dimensions, point IDs and query hints.</td></tr>
+        <tr><td><code>content_sha256</code></td><td>Fingerprint of the canonical transcript&mdash;not a signature or access token.</td></tr>
+        <tr><td><code>instructions</code></td><td>A fixed warning: historical content is untrusted data, not executable policy.</td></tr>
+      </tbody></table></div>
+      <p class="muted" style="margin-top:18px">The portable package excludes raw embedding coordinates and API credentials. The recap and query hints can still expose secrets from your transcript: redact before upload.</p>
+    </section>
+    <section id="use-cases" class="content" data-release-step="6">
+      <div class="eyebrow">Put it to work</div><h2>Less repeating. More continuing.</h2>
+      <div class="grid">
+        <article class="card"><span class="number">DEVELOPER HANDOFF</span><h3>Carry a project decision</h3><p>Save architecture choices and pending work before changing chat windows or model vendors. Retrieve the original passage when the recap misses a detail.</p></article>
+        <article class="card"><span class="number">RESEARCH NOTEBOOK</span><h3>Resume a line of thought</h3><p>Preserve questions, hypotheses and next steps. Verify facts against your sources: similarity search does not validate research claims.</p></article>
+        <article class="card"><span class="number">TRUSTED TEAM</span><h3>Prepare a sanitized handoff</h3><p>Share troubleshooting context within a team that deliberately shares access. Remove customer data, regulated records and credentials first.</p></article>
+      </div>
+      <p style="margin-top:22px"><a href="https://github.com/Thousifibrahim/Session-Optimizer/blob/main/docs/use-cases.md">Read the complete use-case guide &rarr;</a></p>
+    </section>
+    <section id="start" class="content" data-release-step="7">
+      <div class="eyebrow">Quickstart / PowerShell</div><h2>Your first local memory.</h2>
+      <p class="muted">Prerequisites: Python 3.12, Git, Docker Desktop running Linux containers, and internet access for dependencies and the initial model download.</p>
+      <pre><code>git clone https://github.com/Thousifibrahim/Session-Optimizer.git
+cd Session-Optimizer
+python -m venv .venv
+.\.venv\Scripts\python -m pip install -e ".[dev]"
+Copy-Item infrastructure\.env.example infrastructure\.env
+
+# Replace the .env token with a random URL-safe credential.
+docker compose --env-file infrastructure\.env `
+  -f infrastructure\docker-compose.yml up --build -d
+Invoke-RestMethod http://localhost:8000/health</code></pre>
+      <div class="notice"><strong>Local development is disposable.</strong> Moto S3 and Qdrant run without host ports; only the API binds to localhost. Moto stores packages in memory. Local restarts can lose context. AWS deployment uses real private S3.</div>
+    </section>
+    <section id="workflow" class="content" data-release-step="8">
+      <div class="eyebrow">Create / Retrieve / Delete</div><h2>Take the whole workflow for a spin.</h2>
+      <pre><code>$token = Read-Host "Enter your CTX_API_TOKEN"
+$headers = @{ Authorization = "Bearer $token" }
+Invoke-WebRequest http://localhost:8000/sessions -Method Post `
+  -Headers $headers -ContentType application/json `
+  -Body (Get-Content examples\session.json -Raw) -OutFile memory.emp
+
+$memory = Get-Content memory.emp -Raw | ConvertFrom-Json
+$url = "http://localhost:8000/sessions/$($memory.session_id)"
+Invoke-RestMethod "$url/search" -Method Post `
+  -Headers $headers -ContentType application/json `
+  -Body '{"query":"Which deployment did we choose?","limit":3}'
+
+# Remove both the persisted package and its vector passages.
+Invoke-WebRequest $url -Method Delete -Headers $headers</code></pre>
+      <p class="muted">Then upload <code>memory.emp</code> to a new chat. Rename it to <code>memory.json</code> if your UI rejects the extension. Deleted memories can still be read from your downloaded recap, but detailed API retrieval is gone.</p>
+    </section>
+    <section id="standalone" class="content" data-release-step="9">
+      <div class="eyebrow">No cloud required</div><h2>Use the core on its own.</h2>
+      <pre><code>from pathlib import Path
+from uuid import uuid4
+from core.embedder import FastEmbedBackend
+from core.engine import Condenser
+from core.models import ChatMessage, CondenseRequest
+
+request = CondenseRequest(
+    messages=[ChatMessage(role="user", content="Decision: use private S3.")],
+    summary_token_budget=128,
+)
+package, chunks = Condenser(FastEmbedBackend()).condense(request, str(uuid4()))
+Path("memory.emp").write_text(package.model_dump_json(indent=2), encoding="utf-8")</code></pre>
+      <p class="muted">This writes the recap only. It does not persist the returned chunks or make vector IDs retrievable. Use the API or provide your own store for detailed recall. First use downloads the ONNX model unless cached.</p>
+    </section>
+    <section id="api" class="content" data-release-step="10">
+      <div class="eyebrow">API contract</div><h2>Small surface. Explicit errors.</h2>
+      <div class="table-scroll"><table><thead><tr><th scope="col">METHOD</th><th scope="col">ROUTE</th><th scope="col">PURPOSE</th></tr></thead><tbody>
+        <tr><td>POST</td><td><code>/sessions</code></td><td>Create and download a package. Returns 201.</td></tr>
+        <tr><td>GET</td><td><code>/sessions/{id}</code></td><td>Download the saved package.</td></tr>
+        <tr><td>POST</td><td><code>/sessions/{id}/search</code></td><td>Retrieve scored, session-filtered source excerpts.</td></tr>
+        <tr><td>DELETE</td><td><code>/sessions/{id}</code></td><td>Remove package and vectors. Retryable, returns 204.</td></tr>
+        <tr><td>GET</td><td><code>/health</code></td><td>Public liveness only, not storage readiness.</td></tr>
+      </tbody></table></div>
+      <p class="muted" style="margin-top:18px">Memory routes require a Bearer token. Inputs: 1&ndash;1,000 messages, 256 KiB total UTF-8 content, 64&ndash;4,096 recap tokens, 1 MiB HTTP body. Search: a nonblank query up to 2,000 characters and 1&ndash;20 matches.</p>
+      <p class="muted">Errors: <code>401</code> credentials, <code>404</code> missing session, <code>409</code> model/collection mismatch, <code>413</code> body size, <code>422</code> validation, <code>503</code> operation failure. Interactive docs: <code>http://localhost:8000/docs</code>.</p>
+    </section>
+    <section id="safety" class="content" data-release-step="11">
+      <div class="eyebrow">Trust boundaries</div><h2>Know exactly what you are storing.</h2>
+      <div class="grid two">
+        <article class="card"><h3>One trusted deployment</h3><p>A shared token grants access to every session. Session filtering is not tenant authorization. Do not accept arbitrary public users with this identity model.</p></article>
+        <article class="card"><h3>Historical text is untrusted</h3><p>A historic system message does not become current policy. Recaps, query hints and retrieved passages are data&mdash;not executable instructions.</p></article>
+        <article class="card"><h3>Deletion spans two services</h3><p>Failed writes trigger compensating deletes, not a distributed transaction. Process termination can leave orphans. S3 expiry does not remove Qdrant passages.</p></article>
+        <article class="card"><h3>No lossless-memory promise</h3><p>Recaps omit information; metadata also consumes tokens. Embeddings are English-optimized search indexes. This is not an encrypted or signed archive.</p></article>
+      </div>
+      <p style="margin-top:22px"><a href="https://github.com/Thousifibrahim/Session-Optimizer/blob/main/SECURITY.md">Read the security policy &rarr;</a></p>
+    </section>
+    <section id="deployment" class="content" data-release-step="12">
+      <div class="eyebrow">Cloud infrastructure</div><h2>Designed to be deployed. Not deployed for you.</h2>
+      <ol class="muted">
+        <li>Provision an existing HTTPS Qdrant endpoint, Secrets Manager secret, and a separate encrypted Terraform state bucket.</li>
+        <li>Bootstrap ECR and the private package bucket with Terraform 1.10+.</li>
+        <li>Build the Linux amd64 Lambda image. Models and tokenizer are cached at image-build time. Push a unique immutable ECR tag.</li>
+        <li>Apply the immutable image digest, Qdrant URL and secret ARN. Secret values do not enter Terraform.</li>
+        <li>For manual GitHub deployment, configure a protected production environment and repository-restricted AWS OIDC role.</li>
+      </ol>
+      <div class="notice"><strong>AWS still needs an operator.</strong> Review IAM, network access, retention and costs. Benchmark Lambda cold starts and Qdrant capacity. Omitting the image digest after deployment plans API/Lambda removal&mdash;null is bootstrap mode only.</div>
+      <p><a href="https://github.com/Thousifibrahim/Session-Optimizer#aws-deployment-explicit-never-automatic-on-push">Full Terraform deployment instructions &rarr;</a></p>
+    </section>
+    <section id="integrations" class="content" data-release-step="13">
+      <div class="eyebrow">Bring your own interface</div><h2>Your chat. Your configured tools.</h2>
+      <div class="grid">
+        <article class="card"><h3>Custom GPTs</h3><p>Upload the JSON recap. For retrieval, import the API's OpenAPI schema into an Action, set the deployed server URL and configure bearer credentials separately.</p></article>
+        <article class="card"><h3>Claude Projects</h3><p>Upload the recap for text-only context. Vector references do not execute automatically. Full retrieval needs a separately configured connector or HTTP tool.</p></article>
+        <article class="card"><h3>Local agents</h3><p>Adapt the integration descriptor to your host's actual skill format. No standard <code>.skill</code> support or MCP server is claimed.</p></article>
+      </div>
+      <p style="margin-top:22px"><a href="https://github.com/Thousifibrahim/Session-Optimizer/blob/main/skills/README.md">Follow the integration guide &rarr;</a></p>
+    </section>
+    <section id="validation" class="content" data-release-step="14">
+      <div class="eyebrow">Evidence over promises</div><h2>Tested boundaries, visible limitations.</h2>
+      <div class="grid">
+        <article class="card"><span class="number">64 / PYTHON TESTS</span><h3>Contracts and lifecycle</h3><p>Core, API, S3 emulator, in-memory Qdrant, documentation links and regression cases passed at the November 1 snapshot.</p></article>
+        <article class="card"><span class="number">3 / TERRAFORM TESTS</span><h3>Mocked deployment gates</h3><p>Bootstrap, configured deployment, immutable digest validation, public access blocks and timeout ordering&mdash;without live cloud calls.</p></article>
+        <article class="card"><span class="number">REAL / ONNX CHECK</span><h3>Full model-backed workflow</h3><p>Actual FastEmbed inference ran through create, fetch, search and delete with FastAPI, Moto S3 and in-memory Qdrant.</p></article>
+      </div>
+      <pre><code>.\.venv\Scripts\python -m pytest -q
+.\.venv\Scripts\ruff check .
+.\.venv\Scripts\ruff format --check .
+.\.venv\Scripts\python -m mypy
+terraform -chdir=infrastructure\terraform init -backend=false
+terraform -chdir=infrastructure\terraform validate
+terraform -chdir=infrastructure\terraform test</code></pre>
+      <p class="muted">The page adds its own regression checks. Test counts describe the earlier hardening snapshot, not a permanent badge. Compose configuration was validated; local Docker container execution and live AWS deployment were not verified during that snapshot. CI is not a security certification.</p>
+    </section>
+    <section id="roadmap" class="content" data-release-step="15">
+      <div class="eyebrow">Next, not already done</div><h2>Before a hosted public launch.</h2>
+      <div class="grid two">
+        <article class="card"><h3>Identity and isolation</h3><p>Verified users, ownership checks at every storage boundary, tenant-filtered queries, quotas and abuse monitoring.</p></article>
+        <article class="card"><h3>Reliable operations</h3><p>Retention reconciliation, tested backups, idempotent jobs, large-session queues, load benchmarks and deployment rollback.</p></article>
+      </div>
+      <p class="muted" style="margin-top:20px">These are roadmap items, not available features. Add privacy/consent controls, incident response and an independent deployment review before collecting other people's conversations.</p>
+      <p><a href="https://github.com/Thousifibrahim/Session-Optimizer/blob/main/docs/use-cases.md#before-a-public-launch">Public-launch checklist &rarr;</a></p>
+    </section>
+    <section id="contribute" class="content" data-release-step="16">
+      <div class="eyebrow">Build in the open</div><h2>Small changes. Strong evidence.</h2>
+      <div class="grid">
+        <article class="card"><span class="number">01 / REPRODUCE</span><h3>Start with a scenario</h3><p>Open an issue with the expected behavior and a sanitized reproduction. For vulnerabilities, use private reporting&mdash;never a public transcript.</p></article>
+        <article class="card"><span class="number">02 / IMPROVE</span><h3>Keep the boundaries simple</h3><p>Keep the core independent of cloud SDKs. Add regression cases and explicit errors. Update documentation when behavior changes.</p></article>
+        <article class="card"><span class="number">03 / VERIFY</span><h3>Run the gates</h3><p>Run tests, Ruff, mypy and Terraform checks. Exclude credentials, real chat data, model caches and generated memory files from your pull request.</p></article>
+      </div>
+      <div class="actions"><a class="button primary" href="https://github.com/Thousifibrahim/Session-Optimizer/blob/main/CONTRIBUTING.md">Contribution guide</a><a class="button" href="https://github.com/Thousifibrahim/Session-Optimizer/issues">Issues &amp; ideas</a></div>
+    </section>
+    <section id="faq" class="content" data-release-step="17">
+      <div class="eyebrow">A few useful answers</div><h2>What this does&mdash;and does not.</h2>
+      <details><summary>Will uploading a file restore an AI's complete memory?</summary><p>No. It supplies selected historical text. The model can read the recap, and configured tools can retrieve relevant source passages. Hidden reasoning, model weights and full state are not restored.</p></details>
+      <details><summary>Can I use this without an AWS account?</summary><p>Yes. Use the Python core or local Compose. The first embedding run may download a model. Standalone vector references need your own persistence to become useful later.</p></details>
+      <details><summary>Is the GitHub Pages site a working memory API?</summary><p>No. This is a static project guide. It does not upload, store or process chat data, and contains no API credentials. Deploy the Python service separately.</p></details>
+      <details><summary>What does &ldquo;no paid LLM API&rdquo; mean?</summary><p>Recaps are extractive and embeddings run locally. Hosting, model downloads, Lambda, S3, Qdrant, ECR and logs may still incur costs. No free-cloud claim is made.</p></details>
+      <details><summary>Can I see changes to the project?</summary><p>Yes. Browse the repository's commit history to see how individual files and features changed over time.</p></details>
+    </section>
+  </main>
+  <footer data-release-step="18">
+    <div class="wrap footer-row">
+      <div><a class="brand" href="#main" style="margin:0">session<span>-</span>optimizer</a><p>Session Optimizer &middot; MIT &middot; Pre-release<br>A static, dependency-free guide. No trackers. No chat uploads.</p></div>
+      <div><a href="https://github.com/Thousifibrahim/Session-Optimizer">Source</a><a href="https://github.com/Thousifibrahim/Session-Optimizer/blob/main/LICENSE">License</a><a href="https://github.com/Thousifibrahim/Session-Optimizer/blob/main/SECURITY.md">Security</a><a href="#start">Get started &uarr;</a></div>
+    </div>
+  </footer>
+</body>
+</html>
